@@ -49,7 +49,7 @@ linux_chrome = {
 caps = [mac_safari, mac_chrome, windows_ie, windows_firefox, linux_chrome]
 
 username = "arctic"
-access_key = "PRIVATE_KEY"
+access_key = "912b3451-41af-40b9-9e0a-759e23171b67"
 
 
 def get_faculty(cap):
@@ -58,10 +58,11 @@ def get_faculty(cap):
         desired_capabilities=cap)
 
     driver.get("https://www.rit.edu/computing/faculty")
-    overlay_div = driver.find_element_by_id("overlay-body")
+
     """asserts section"""
     all_passed = True
     try:
+        overlay_div = driver.find_element_by_id("overlay-body")
         assert overlay_div.get_attribute("class") == "position-fixed"
     except AssertionError:
         all_passed = False
