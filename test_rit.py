@@ -49,13 +49,15 @@ linux_chrome = {
 caps = [mac_safari, mac_chrome, windows_ie, windows_firefox, linux_chrome]
 
 username = "arctic"
-access_key = "912b3451-41af-40b9-9e0a-759e23171b67"
+access_key = "PRIVATE_KEY"
 
 
 def get_faculty(cap):
     driver = webdriver.Remote(
         command_executor='https://{}:{}@ondemand.saucelabs.com:443/wd/hub'.format(username, access_key),
         desired_capabilities=cap)
+
+    print("Thread started on:\nOS: " + cap['platform'] + "\nBrowser: " + cap['browserName'] + "\n\n")
 
     driver.get("https://www.rit.edu/computing/faculty")
 
@@ -72,9 +74,36 @@ def get_faculty(cap):
     except AssertionError:
         all_passed = False
         print("Unable to load the RIT faculty page!")
+    try:
+        find_now_button = driver.find_element_by_id("edit-submit-directory--2")
+        assert find_now_button.get_attribute("value") == "Find Now"
+    except AssertionError:
+        all_passed = False
+        print("Search button not found")
 
+    try:
+        filter_by = driver.find_element_by_id("directory-select")
+        assert filter_by.get_attribute("class") == "form-select"
+    except AssertionError:
+        all_passed = False
+        print("Filter by dropdown not found")
+    try:
+        filter_by = driver.find_element_by_id("directory-select")
+        options = filter_by.find_elements_by_xpath("*")
+        children = []
+        expected_children = ["All", "Computer Science, Dept. of", "Computing and Information Sciences Ph.D. Program",
+                             "Computing Security, Dept. of", "Information, School of",
+                             "Interactive Games and Media, School of", "Software Engineering, Dept. of"]
+        for o in options:
+            children.append(o.get_attribute("innerHTML"))
+        assert children == expected_children
+    except AssertionError:
+        all_passed = False
+        print("Proper children not found")
     if all_passed:
         print("SUCCESS!")
+    else:
+        raise Exception("Webpage missing key elements")
     driver.quit()
 
 
@@ -84,6 +113,3 @@ for i in range(0, 5):
     t = Thread(target=get_faculty, args=(caps[i],))
     threads.append(t)
     t.start()
-
-for thread in threads:
-    thread.join()
